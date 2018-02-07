@@ -1,17 +1,21 @@
 # Declaration of variables
-CC = g++
-C = gcc
+CC = gcc
 CC_FLAGS = -w 
-LINKER_FLAGS = 	-L/usr/local/lib -lgraph -lncurses -ltinfo
+LINKER_FLAGS = 	-L/usr/local/lib -lncurses -ltinfo
 
 
 # File names
-EXEC = bin/run
-SOURCES = $(wildcard *.cpp)
-OBJECTS = $(SOURCES:.cpp=.o)
+EXEC = bin/main
+SOURCES = main.c ADandBS.c time.c
+OBJECTS = main.o ADandBS.o time.o 
 
 #ALL
-ALL: $(EXEC)
+all: bindir $(EXEC)
+
+#Create necessary directories	
+bindir:
+	mkdir -p bin/
+
 
 # Main target
 $(EXEC): $(OBJECTS)
@@ -23,21 +27,13 @@ $(EXEC): $(OBJECTS)
 	$(CC) -c $(CC_FLAGS) $(@:%.o=%.cpp) -o bin/$@
 
 %.o: %.c
-	$(C) -c $(CC_FLAGS) $(@:%.o=%.c) -o bin/$@
+	$(CC) -c $(CC_FLAGS) $(@:%.o=%.c) -o bin/$@
 
 # To link object file to standalone exec files
 link-%:
-	$(CC) $(CC_FLAGS) bin/$(@:link-%=%).o $(LINKER_FLAGS) -o bin/$(@:link-%=%)
-
-
-# To compile and link at once
-%: %.cpp
-	$(CC) $(CC_FLAGS) $@.cpp $(LINKER_FLAGS) -o bin/$@
-
-%: %.c
-	$(C) $(CC_FLAGS) $@.c $(LINKER_FLAGS) -o bin/$@
+	$(CC) $(CC_FLAGS) $(addprefix bin/, $(OBJECTS)) $(LINKER_FLAGS) -o bin/$(@:link-%=%)
 
 # To remove generated files
 clean:
-	rm -f $(EXEC) $(addperfix bin/, $(OBJECTS))
+	rm -f $(EXEC) $(addprefix bin/, $(OBJECTS))
 
