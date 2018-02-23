@@ -6,6 +6,7 @@
   #include <curses.h>
 #else
   #include <conio.h>
+  #include <windows.h>
 #endif
 
 
@@ -48,10 +49,10 @@ int daysSinceADEpoch(struct date *d);
 int daysSinceBSEpoch(struct date *d);
 struct date nthDayOfBSEpoch(int n);
 struct date nthDayOfADEpoch(int n);
-struct date convertADToBS(struct date ad);
-struct date convertBSToAD(struct date bs);
-struct monthData calculateMonthDataBS(struct date d);
-struct monthData calculateMonthDataAD(struct date d);
+struct date convertADToBS(struct date *ad);
+struct date convertBSToAD(struct date *bs);
+struct monthData calculateMonthDataBS(struct date *d);
+struct monthData calculateMonthDataAD(struct date *d);
 struct monthData calculateMonthData(struct date *d);
 
 // time.c
@@ -59,13 +60,12 @@ struct date getCurrentDate();
 struct time getCurrentTime();
 void saveTimezones(struct time tz[], int count);
 int readTimezones(struct time tz[]);
-void calculateTime(struct time tz[], int count);
+void updateTime(struct time tz[], int count);
 
 // main.c
-#ifdef __linux__
 void clrscr();
-#endif
 void printTabs(int n);
 void printTime(struct time* time);
-void display(struct date* d, struct time timezones[], int count);
-int timezoneMenu(struct time tz[], int count);
+void displayCalendarAndTime(struct date *d);
+char displayMainMenu(struct date *d);
+int displayTimezoneMenu();

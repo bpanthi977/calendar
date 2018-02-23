@@ -58,7 +58,7 @@ int readTimezones(struct time tz[]){
     return 1;
   }
   for (i=1; i<MAXTIMEZONES; i++){
-    if (fscanf(f, "%s %d", &name, &diff) == EOF)
+    if (fscanf(f, "%s %d", name, &diff) == EOF)
       break;
     
     strcpy(tz[i].name,name);
@@ -67,11 +67,12 @@ int readTimezones(struct time tz[]){
   return i; // New number of timezones
 }
 
-void calculateTime(struct time tz[], int count){
+void updateTime(struct time tz[], int count){
   // Calculates time in each time zone according to current time and
   // the timezone time difference
+  int i;
   int t1 = tz[0].utcdiff;
-  for (int i=1; i<count; i++){
+  for (i=1; i<count; i++){
     tz[i].sec = tz[0].sec;
     tz[i].min = tz[0].min + (tz[i].utcdiff - t1);
     tz[i].hr = tz[0].hr;

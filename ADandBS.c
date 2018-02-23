@@ -101,7 +101,7 @@ const int dataBS[][13] = {
 
 int isLeapYear(int y){
   // returns true if y is a leap year
-  return (y % 4 == 0 && y % 100 != 0 || y % 400 == 0);
+  return (y % 4 == 0 && (y % 100 != 0 || y % 400 == 0));
 }
 
 int validDate(struct date* d){
@@ -122,14 +122,14 @@ int daysSinceADEpoch(struct date *d){
   // this day
   // (e.g.  0001/01/02 is 2nd day)
   extern int daysInMonth[];
-  
+  int i;
   // Count number of days from 1 AD upto start of the given year
   int y = d->year - 1;
   int daysBeforeThisYear = y*365 + y/4 - y/100 + y/400;
     
   // Count number of days from start of year upto the give month
   int daysBeforeThisMonth = 0; 
-  for (int i=0; i< d->month - 1; i++){
+  for (i=0; i< d->month - 1; i++){
     daysBeforeThisMonth += daysInMonth[i];
   }
   
@@ -179,7 +179,7 @@ struct date nthDayOfBSEpoch(int n){
   }
   // NOTE: if n <=  0 then the while loop is not entered and 2000/1/1 is returned
   // else processing is done normally and req. date is returned
-  struct date d = {year + 2000, month + 1, day, -1 , BS_DATE};
+  struct date d = {year + 2000, month + 1, day, BS_DATE};
   return d;
 }
 
@@ -215,64 +215,66 @@ struct date nthDayOfADEpoch(int n){
   return d;
 }
 
+struct date convertADToBS(struct date *ad) {
+    // This function returns date in BS when ad, date in AD, is given
+    static struct date BSEpoch = {1943, 4, 14, AD_DATE};
+    int sinceADEpochToBSEpoch = daysSinceADEpoch(&BSEpoch);
+    int sinceADEpochToNow = daysSinceADEpoch(ad);
+    int sinceBSEpoch = sinceADEpochToNow - sinceADEpochToBSEpoch + 1;
 
-struct date convertADToBS(struct date ad){
-  // This function returns date in BS when ad, date in AD, is given
-  static struct date BSEpoch = {1943, 4, 14, AD_DATE};
-  int sinceADEpochToBSEpoch = daysSinceADEpoch(&BSEpoch);
-  int sinceADEpochToNow = daysSinceADEpoch(&ad);
-  int sinceBSEpoch = sinceADEpochToNow - sinceADEpochToBSEpoch + 1;
-
-  return nthDayOfBSEpoch(sinceBSEpoch);  
+    return nthDayOfBSEpoch(sinceBSEpoch);
 }
 
-struct date convertBSToAD(struct date bs){
-  // This function returns date in AD when bs, date in BS, is given
-  static struct date BSEpoch = {1943, 4, 14, AD_DATE};
-  int sinceADEpochToBSEpoch = daysSinceADEpoch(&BSEpoch);
-  int sinceBSEpochToNow = daysSinceBSEpoch(&bs);
-  int sinceADEpochToNow = sinceADEpochToBSEpoch + sinceBSEpochToNow - 1;
+struct date convertBSToAD(struct date *bs) {
+    // This function returns date in AD when bs, date in BS, is given
+    static struct date BSEpoch = {1943, 4, 14, AD_DATE};
+    int sinceADEpochToBSEpoch = daysSinceADEpoch(&BSEpoch);
+    int sinceBSEpochToNow = daysSinceBSEpoch(bs);
+    int sinceADEpochToNow = sinceADEpochToBSEpoch + sinceBSEpochToNow - 1;
 
-  return nthDayOfADEpoch(sinceADEpochToNow);  
+    return nthDayOfADEpoch(sinceADEpochToNow);
 }
 
-
-struct monthData calculateMonthDataBS(struct date d){
-  struct monthData m;
-  d.day = 1;
-  int daysPassed = daysSinceBSEpoch(&d);
-  // 2000/1/1 is Wednesday. So if n days have passed since
-  // then this day is (n+2) mod 7 
-  m.firstDay = (daysPassed + 2) % 7;
-  // Set number of days in this month
-  m.numDays = dataBS[d.year - 2000][d.month -1];
-  
-  return m;
-}
-
-struct monthData calculateMonthDataAD(struct date d){
+struct monthData calculateMonthDataBS(struct date *d) {
   // Calculates and sets the num of days and starting day
-  // of the given month
+  // of the given month of BS date
+    struct monthData m;
+    d->day = 1;
+    int daysPassed = daysSinceBSEpoch(d);
+    // 2000/1/1 is Wednesday. So if n days have passed since
+    // then this day is (n+2) mod 7
+    m.firstDay = (daysPassed + 2) % 7;
+    // Set number of days in this month
+    m.numDays = dataBS[d->year - 2000][d->month -1];
 
-  struct monthData m;
-  d.day = 1;
-  extern int daysInMonth[];
-  int daysPassed = daysSinceADEpoch(&d);
-  // 0001/01/01 is ----Monday----- . So if n days have passed since, 
-  // then this day is (n mod 7) = (1 for Monday, 2 for Tues ...)  
-  m.firstDay = daysPassed  % 7;  
-  // Set the number of Days in given month
-  m.numDays = daysInMonth[d.month-1];
-  if (isLeapYear(d.year) && d.month == 2){  
-      m.numDays++;
-  }
-  return m;
+    return m;
 }
 
-struct monthData calculateMonthData(struct date *d){
-  if (d->type == AD_DATE){
-    return calculateMonthDataAD(*d);
-  } else {
-    return calculateMonthDataBS(*d);
-  }
+struct monthData calculateMonthDataAD(struct date *d) {
+    // Calculates and sets the num of days and starting day
+    // of the given month of AD date
+    struct monthData m;
+    d->day = 1;
+    extern int daysInMonth[];
+    int daysPassed = daysSinceADEpoch(d);
+    // 0001/01/01 is ----Monday----- . So if n days have passed since,
+    // then this day is (n mod 7) = (1 for Monday, 2 for Tues ...)
+    m.firstDay = daysPassed  % 7;
+    // Set the number of Days in given month
+    m.numDays = daysInMonth[d->month-1];
+    if (isLeapYear(d->year) && d->month == 2) {
+        m.numDays++;
+    }
+    return m;
+}
+
+struct monthData calculateMonthData(struct date *d) {
+    // Since d is modified in the helper functions calculateMonthDataAD/BS,
+    // d is duplicated before passing to the helper functions
+    struct date dd = *d;
+    if (dd.type == AD_DATE) {
+        return calculateMonthDataAD(&dd);
+    } else {
+        return calculateMonthDataBS(&dd);
+    }
 }
