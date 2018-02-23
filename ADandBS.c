@@ -4,7 +4,7 @@
 int daysInMonth[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
 // Information about number of days in every month since 2000 BS to 2090 BS
-const dataBS[][13] = {
+const int dataBS[][13] = {
     {30,32,31,32,31,30,30,30,29,30,29,31},
     {31,31,32,31,31,31,30,29,30,29,30,30},
     {31,31,32,32,31,30,30,29,30,29,30,30},
@@ -160,12 +160,12 @@ int daysSinceBSEpoch(struct date *d){
 }
 
 struct date nthDayOfBSEpoch(int n){
-  int month,year, days = 0, day = 1, daysInThisMonth;
+  int month,year, day = 1, days = 0, daysInThisMonth;
   month = 0;
   year = 0;
   while (days<n){
     daysInThisMonth = dataBS[year][month];
-    if (days+daysInThisMonth > n){
+    if (days+daysInThisMonth >= n){
       day = n - days;
       days = n;
     } else {
@@ -177,7 +177,8 @@ struct date nthDayOfBSEpoch(int n){
       }      
     }
   }
-
+  // NOTE: if n <=  0 then the while loop is not entered and 2000/1/1 is returned
+  // else processing is done normally and req. date is returned
   struct date d = {year + 2000, month + 1, day, -1 , BS_DATE};
   return d;
 }
@@ -185,27 +186,24 @@ struct date nthDayOfBSEpoch(int n){
 struct date nthDayOfADEpoch(int n){
   struct date d;
   int daysInThisMonth;
-  int y = n/365.2422;
+  int y = n/365.2425;
   int daysBeforeThisYear = y*365 + y/4 - y/100 + y/400;
-  d.year = y + 1;
   int remDays = n - daysBeforeThisYear;
-  if (remDays < 0){
-    d.year --;
-    remDays = remDays + 365 + (isLeapYear(d.year -1 )? 1 : 0);
-  } else if (remDays > 365 +  (isLeapYear(d.year -1 )? 1 : 0)) {
-    remDays -= (365 + (isLeapYear(d.year))? 1:0);
-    d.year++;
+  if (remDays == 0){
+    d.year = y;
+    d.month = 12;
+    d.day = 31;
+    return d;
   }
-  /* printf("%d\n", n); */
-  /* printf("%d\n", remDays); */
   
-  d.month = 1;
+  d.year = y + 1;
+  d.month = 1;  
   while (remDays > 0){
     daysInThisMonth = daysInMonth[d.month-1];
     if (d.month == 2 && isLeapYear(d.year))
       daysInThisMonth++;
 
-    if (remDays < daysInThisMonth){
+    if (remDays <= daysInThisMonth){
       d.day = remDays;
       remDays =0;
     } else {

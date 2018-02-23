@@ -25,7 +25,11 @@ struct time getCurrentTime(){
   t.sec = timeinfo->tm_sec;
   t.min = timeinfo->tm_min;
   t.hr = timeinfo->tm_hour;
+  #ifdef __linux__
   t.utcdiff = (int) timeinfo->tm_gmtoff / 60 ;
+  #else
+  t.utcdiff = -_timezone/60;
+  #endif
   strcpy(t.name, "LOCALTIME");
   return t;
 }

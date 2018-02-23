@@ -25,12 +25,13 @@ int main(){
   WINDOW *w = initscr();
   cbreak();
   nodelay(w, TRUE);
-  echo();
+  noecho();
   #endif
 
   d = getCurrentDate();
   *now = getCurrentTime();
   prev = *now;
+  
   while(flag){
     // If date is out of range (due to user input)
     if (!validDate(&d)){
@@ -119,12 +120,14 @@ int main(){
 }
 
 void printTabs(int n){
-  int i=0;
-  for (;i<n;i++)
+  // prints n number of tabs on the screen
+  int i;
+  for (i=0;i<n;i++)
     printf("\t");
 }
 
 void printTime(struct time* time){
+  // prints time in a nice format
   printf("%s %d:%d:%d (%+d mins)", time->name, time->hr, time->min, time->sec, time->utcdiff);
 }
 

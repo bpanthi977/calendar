@@ -11,14 +11,8 @@
 
 #define MAXTIMEZONES 10   // Maximum number of timezone to show in main interface
 #define TIMEZONEFILE "timezones.txt"
-#define AD_DATE 0
-#define BS_DATE 1
 
-// Number of days in each month of English calendar (for non-leap year)
-int daysInMonth[12];
-
-// Information about number of days in every month since 2000 BS to 2090 BS
-const dataBS[91][13];
+enum calendar_system { AD_DATE, BS_DATE };
 
 // Structure to store data necessary to show calendar of a month
 struct monthData {   
@@ -41,7 +35,7 @@ struct date{
   int year;
   int month;    // Month (1 for Jan, 2 for Feb, ... )
   int day;
-  int type; // AD = 0 , BS = 1
+  enum calendar_system type;
 };
 
 
