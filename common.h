@@ -3,10 +3,10 @@
 #include <string.h>
 #include <math.h>
 #ifdef __linux__
-  #include <curses.h>
+#include <curses.h>
 #else
-  #include <conio.h>
-  #include <windows.h>
+#include <conio.h>
+#include <windows.h>
 #endif
 
 
