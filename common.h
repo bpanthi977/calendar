@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <time.h>
-#include <string.h>
-#include <math.h>
+#include <stdlib.h>
 #ifdef __linux__
 #include <curses.h>
 #else
@@ -51,8 +50,8 @@ struct date nthDayOfBSEpoch(int n);
 struct date nthDayOfADEpoch(int n);
 struct date convertADToBS(struct date *ad);
 struct date convertBSToAD(struct date *bs);
-struct monthData calculateMonthDataBS(struct date *d);
-struct monthData calculateMonthDataAD(struct date *d);
+struct monthData calculateMonthDataBS(struct date d);
+struct monthData calculateMonthDataAD(struct date d);
 struct monthData calculateMonthData(struct date *d);
 
 // time.c

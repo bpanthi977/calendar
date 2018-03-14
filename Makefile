@@ -2,7 +2,7 @@
 CC = gcc
 CC_FLAGS = -w 
 LINKER_FLAGS = 	-L/usr/local/lib -lncurses -ltinfo
-
+WINCC = wine "/home/bpanthi/.wine/drive_c/Program Files (x86)/CodeBlocks/MinGW/bin/gcc.exe"
 
 # File names
 EXEC = bin/main
@@ -13,7 +13,12 @@ CODEFILES = $(SOURCES) $(HEADERS)
 CBPFILE = Calendar.cbp
 WINCODEDIR = /tmp/wincode
 
-
+winall: changecompiler all
+changecompiler:
+	$(eval CC = $(WINCC))
+	$(eval LINKER_FLAGS = )
+winrun:
+	wine /home/bpanthi/.wine/drive_c/windows/system32/cmd.exe /c $(EXEC).exe
 #ALL
 all: bindir $(EXEC)
 
@@ -26,6 +31,8 @@ bindir:
 $(EXEC): $(OBJECTS)
 	$(CC) $(CC_FLAGS) $(addprefix bin/, $(OBJECTS)) $(LINKER_FLAGS) -o $(EXEC)
 
+run :
+	$(EXEC)
 
 # To compile 
 %.o: %.c

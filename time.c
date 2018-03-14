@@ -28,7 +28,7 @@ struct time getCurrentTime(){
   #ifdef __linux__
   t.utcdiff = (int) timeinfo->tm_gmtoff / 60 ;
   #else
-  t.utcdiff = -_timezone/60;
+  t.utcdiff = -  _timezone/60;
   #endif
   strcpy(t.name, "LOCALTIME");
   return t;
@@ -76,12 +76,19 @@ void updateTime(struct time tz[], int count){
     tz[i].sec = tz[0].sec;
     tz[i].min = tz[0].min + (tz[i].utcdiff - t1);
     tz[i].hr = tz[0].hr;
-    if (tz[i].min > 59 || tz[i].min < 0){
+    
+    if (tz[i].min > 59){
       tz[i].hr += tz[i].min / 60;
       tz[i].min = abs(tz[i].min) % 60;
+    } else if (tz[i].min < 0) {
+      tz[i].hr += tz[i].min / 60 - 1;
+      tz[i].min = 60 - abs(tz[i].min) % 60;
     }
-    if (tz[i].hr > 23 || tz[i].hr < 0){
+    
+    if (tz[i].hr > 23){
       tz[i].hr = abs(tz[i].hr) % 24;
+    } else if (tz[i].hr < 0) {
+      tz[i].hr = 24 - abs(tz[i].hr) % 24;
     }
   }
 }

@@ -54,7 +54,11 @@ int main(){
     if (!validDate(&d)) {
       printf("\nDate is Out of Range\n");
       fflush(stdin);
+      #ifdef __linux__
+      getchar();
+      #else
       getch();
+      #endif
       d = getCurrentDate();
     }
   }
@@ -73,7 +77,7 @@ void printTabs(int n){
 
 void printTime(struct time* time){
   // prints time in a nice format
-  printf("%s %d:%d:%d (%+d mins)", time->name, time->hr, time->min, time->sec, time->utcdiff);
+  printf("%s %d:%d:%d %s (%+d mins)", time->name, time->hr % 12 , time->min, time->sec, (time->hr<13)? "AM":"PM", time->utcdiff);
 }
 
 void displayCalendarAndTime(struct date *d){
@@ -83,8 +87,8 @@ void displayCalendarAndTime(struct date *d){
   struct monthData m = calculateMonthData(d);
 
   // Header line (Month/Year) and Days
-  printf("\t\t  %d/%d/%d %s\n\r", d->year, d->month, d->day, (d->type == AD_DATE)? "AD":"BS");
-  printf("Sun \tMon \tTues \tWed \tThus \tFri \tSat \t\tTime\n\r");
+  printf("\t\t  %d/%d/%d %s\r\n", d->year, d->month, d->day, (d->type == AD_DATE)? "AD":"BS");
+  printf("Sun \tMon \tTues \tWed \tThus \tFri \tSat \t\tTime\r\n");
 
   // Start of Days
   // Gap before 1st day
@@ -104,7 +108,7 @@ void displayCalendarAndTime(struct date *d){
 	printTime(&timezones[t]);
 	t++;
       }
-      printf("\n\r");
+      printf("\r\n");
     }
   }
  
@@ -112,7 +116,7 @@ void displayCalendarAndTime(struct date *d){
   printTabs(8 - day % 7);
   for (;t<tzcount;t++){
       printTime(&timezones[t]);
-      printf("\n\r");
+      printf("\r\n");
       printTabs(8);
   }
 }
@@ -123,7 +127,7 @@ char displayMainMenu(struct date *d){
   // returns the key user pressed or returns 0 if time has to be updated
   char input=0;
   struct time now, prev;
-  printf("\n\n\rPress \r\n p for previous month \t\t n for next month, \r\n d to jump to specific date \t t to edit timezones \r\n s to switch calendar \t\t q to quit \r\n ");
+  printf("\n\r\nPress \r\n p for previous month \t\t n for next month, \r\n d to jump to specific date \t t to edit timezones \r\n s to switch calendar \t\t q to quit \r\n ");
 
   prev = getCurrentTime();
   while (1) {
@@ -167,13 +171,23 @@ char displayMainMenu(struct date *d){
     d->day = 1;
     break;
   case 'd':
+
     while (1) {
-      printf("\n\r Enter date as Y/m/d : ");
+      printf("\r\n Enter date as Y/m/d : ");
+      d->year = -1; // Make date invalid before entry
       scanf(" %d/%d/%d", &d->year, &d->month, &d->day);
       if (validDate(d))
 	break;
-      else
-	printf("Date Invalid");
+      else{
+	printf("\r\nDate Invalid");
+	fflush(stdin);
+	#ifdef __linux__
+	getchar();
+	#else
+	getch();
+	#endif
+      }
+      
     }
     break;
   case 's':
@@ -195,20 +209,22 @@ int displayTimezoneMenu(){
   char input;
   clrscr();
 
-  printf("TIMEZONES\n\r");
-  printf("=========\n\r");
+  printf("TIMEZONES\r\n");
+  printf("=========\r\n");
   // List timezones
-  printf("SN \tUTC OFFSET \tName \n\r");
+  printf("SN \tUTC OFFSET \tName \r\n");
   for (i=0; i<count; i++) {
-    printf("%d \t%+d \t\t%s\n\r", i, timezones[i].utcdiff, timezones[i].name);
+    printf("%d \t%+d \t\t%s\r\n", i, timezones[i].utcdiff, timezones[i].name);
   }
   // Show menu
-  printf("\nPress: \n\r");
+  printf("\nPress: \r\n");
   if (count < MAXTIMEZONES)
-    printf(" a to add\n\r");
-  if (count > 1)
-    printf(" e to edit entry\n\r");
-  printf("Any other key to exit\n\r");
+    printf(" a to add\r\n");
+  if (count > 1){
+    printf(" e to edit entry\r\n");
+    printf(" r to remove entry\r\n");
+  }
+  printf("Any other key to exit\r\n");
 
   // Get Input and Process it
   fflush(stdin);
@@ -230,15 +246,28 @@ int displayTimezoneMenu(){
       scanf("%d", &entry);
     }
     break;
+  case 'r':
+    if (count > 1){
+      printf("Entry Number? (1-%d)", count-1);
+      scanf("%d", &entry);
+      if (entry>0 && entry<count){
+	for (i=entry;i<count;i++)
+	  timezones[i] = timezones[i+1];      
+	count = --tzcount;
+	saveTimezones(timezones, tzcount);
+      }
+      entry = 0;
+    }
+    break;
   default:
     entry = 0;
   }
 
   // Modify/Add entry if it was selected
-  if (entry) {
+  if (entry && entry<=count) {
     printf("Name: ");
     scanf("%s", timezones[entry].name);
-    printf("\n\rDifference from UTC (in mins): ");
+    printf("\r\nDifference from UTC (in mins): ");
     scanf("%d", &timezones[entry].utcdiff);
     saveTimezones(timezones, count);
   }

@@ -95,7 +95,7 @@ const int dataBS[][13] = {
     {31,31,32,31,31,31,30,30,29,30,30,30},
     {30,31,32,32,30,31,30,30,29,30,30,30},
     {30,32,31,32,31,30,30,30,29,30,30,30},
-    {30,32,31,32,31,30,30,30,29,30,30,35}
+    {30,32,31,32,31,30,30,30,29,30,30,30}
 };
 
 
@@ -113,7 +113,7 @@ int validDate(struct date* d){
   if (d->type == AD_DATE) {
     return d->year > 0 ;
   } else {
-    return d->year > 1999 && d->year < 2090;
+    return d->year > 1999 && d->year <= 2090;
   }
 }
 
@@ -235,46 +235,43 @@ struct date convertBSToAD(struct date *bs) {
     return nthDayOfADEpoch(sinceADEpochToNow);
 }
 
-struct monthData calculateMonthDataBS(struct date *d) {
+struct monthData calculateMonthDataBS(struct date d) {
   // Calculates and sets the num of days and starting day
   // of the given month of BS date
     struct monthData m;
-    d->day = 1;
-    int daysPassed = daysSinceBSEpoch(d);
+    d.day = 1;
+    int daysPassed = daysSinceBSEpoch(&d);
     // 2000/1/1 is Wednesday. So if n days have passed since
     // then this day is (n+2) mod 7
     m.firstDay = (daysPassed + 2) % 7;
     // Set number of days in this month
-    m.numDays = dataBS[d->year - 2000][d->month -1];
+    m.numDays = dataBS[d.year - 2000][d.month -1];
 
     return m;
 }
 
-struct monthData calculateMonthDataAD(struct date *d) {
+struct monthData calculateMonthDataAD(struct date d) {
     // Calculates and sets the num of days and starting day
     // of the given month of AD date
     struct monthData m;
-    d->day = 1;
+    d.day = 1;
     extern int daysInMonth[];
-    int daysPassed = daysSinceADEpoch(d);
+    int daysPassed = daysSinceADEpoch(&d);
     // 0001/01/01 is ----Monday----- . So if n days have passed since,
     // then this day is (n mod 7) = (1 for Monday, 2 for Tues ...)
     m.firstDay = daysPassed  % 7;
     // Set the number of Days in given month
-    m.numDays = daysInMonth[d->month-1];
-    if (isLeapYear(d->year) && d->month == 2) {
+    m.numDays = daysInMonth[d.month-1];
+    if (isLeapYear(d.year) && d.month == 2) {
         m.numDays++;
     }
     return m;
 }
 
 struct monthData calculateMonthData(struct date *d) {
-    // Since d is modified in the helper functions calculateMonthDataAD/BS,
-    // d is duplicated before passing to the helper functions
-    struct date dd = *d;
-    if (dd.type == AD_DATE) {
-        return calculateMonthDataAD(&dd);
+    if (d->type == AD_DATE) {
+        return calculateMonthDataAD(*d);
     } else {
-        return calculateMonthDataBS(&dd);
+        return calculateMonthDataBS(*d);
     }
 }
