@@ -7,7 +7,8 @@ void clrscr(){
 }
 void Sleep(int ms){
   char command[20];
-  system(sprintf(command, "sleep %ds", (float)ms/1000));
+  sprintf(command, "sleep %ds", ms / 1000);
+  system(command);
 }
 #else
 void clrscr(){
